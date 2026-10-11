@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getHomeSections } from "@/lib/catalog";
 import { getSettings } from "@/lib/settings";
 import { placeholderUrl } from "@/lib/images";
+import { EDITORIAL_IMAGE, INSTAGRAM_LINKS } from "@/lib/photos";
 import { ProductGrid } from "@/components/store/product-card";
 import { NewsletterForm } from "@/components/store/newsletter-form";
 import HeroSculpture from "@/components/store/hero-sculpture-lazy";
@@ -144,8 +145,8 @@ export default async function HomePage() {
         <div className="relative min-h-[420px] overflow-hidden bg-sand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={placeholderUrl("Boardroom", { sub: "To After Hours", w: 1200, h: 1400 })}
-            alt="From boardroom to after hours"
+            src={EDITORIAL_IMAGE}
+            alt="Tailoring editorial — from boardroom to after hours"
             loading="lazy"
             className="absolute inset-0 h-full w-full object-cover"
           />
@@ -230,12 +231,12 @@ export default async function HomePage() {
         </div>
 
         <div className="mt-12 grid grid-cols-3 gap-2 sm:grid-cols-6">
-          {["Tailoring", "Shirts", "Denim", "Occasion", "Casual", "Accessories"].map((label) => (
+          {INSTAGRAM_LINKS.map(({ label, url }) => (
             <div key={label} className="relative aspect-square overflow-hidden bg-sand">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={placeholderUrl(label, { sub: "@maisonhomme", w: 500, h: 500 })}
-                alt={label}
+                src={url}
+                alt={`${label} — @maisonhomme`}
                 loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
               />

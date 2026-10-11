@@ -17,6 +17,7 @@
  */
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
+import { categoryImage, photo, photoPool, HERO_IMAGE } from "../lib/photos";
 
 const prisma = new PrismaClient();
 
@@ -448,6 +449,7 @@ const COUPONS: { code: string; type: string; value: number; minCartValue: number
 const SETTINGS: Record<string, string> = {
   "brand.name": "MAISON HOMME",
   "brand.tagline": "The Art of Dressing Well",
+  "hero.image": HERO_IMAGE,
   "contact.email": "care@maisonhomme.in",
   "contact.phone": "+91 98100 00000",
   "hero.heading": "THE ART OF DRESSING WELL.",
@@ -513,12 +515,12 @@ async function main() {
   for (const cat of CATEGORIES) {
     const parent = await prisma.category.upsert({
       where: { slug: cat.slug },
-      update: {},
+      update: { imageUrl: categoryImage(cat.slug) },
       create: {
         name: cat.name,
         slug: cat.slug,
         description: `${cat.name} — premium menswear by MAISON HOMME.`,
-        imageUrl: `/api/img?label=${encodeURIComponent(cat.name)}&sub=Collection&w=700&h=900`,
+        imageUrl: categoryImage(cat.slug),
         sortOrder: CATEGORIES.findIndex((c) => c.slug === cat.slug),
         isActive: true,
       },
@@ -526,12 +528,12 @@ async function main() {
     for (const child of cat.children ?? []) {
       await prisma.category.upsert({
         where: { slug: child.slug },
-        update: { parentId: parent.id },
+        update: { parentId: parent.id, imageUrl: categoryImage(child.slug) },
         create: {
           name: child.name,
           slug: child.slug,
           description: `${child.name} — premium menswear by MAISON HOMME.`,
-          imageUrl: `/api/img?label=${encodeURIComponent(child.name)}&sub=Collection&w=700&h=900`,
+          imageUrl: categoryImage(child.slug),
           parentId: parent.id,
           sortOrder: 0,
           isActive: true,
@@ -588,15 +590,18 @@ async function main() {
       },
     });
 
-    // images — one per colour (placeholder, replaced by real photography later)
+    // real product photography — three shots per colour, drawn from the
+    // category's curated photo pool so every product shows genuine menswear.
     await prisma.productImage.deleteMany({ where: { productId: product.id } });
+    const pool = photoPool(spec.category);
     let pos = 0;
+    let shot = 0;
     for (const v of spec.variants) {
       for (const angle of ["front", "detail", "back"]) {
         await prisma.productImage.create({
           data: {
             productId: product.id,
-            url: `/api/img?label=${encodeURIComponent(spec.name)}&sub=${encodeURIComponent(`${v.color} · ${angle}`)}&w=900&h=1200`,
+            url: photo(pool[shot++ % pool.length], 900, 1200),
             alt: `${spec.name} in ${v.color} (${angle})`,
             color: v.color,
             position: pos++,
