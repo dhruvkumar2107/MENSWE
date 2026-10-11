@@ -74,6 +74,13 @@ h1, h2, h3, .font-display {
   .container-wide { padding-inline: 2.5rem; }
 }
 
+.container-narrow {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 52rem;
+  padding-inline: 1.25rem;
+}
+
 .tracking-luxe {
   letter-spacing: 0.28em;
 }

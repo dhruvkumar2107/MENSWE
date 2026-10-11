@@ -76,6 +76,11 @@ export async function releaseStock(referenceId: string, userId?: string | null) 
         },
       });
     }
+    // Mark the reservation consumed (kept for audit) so it can never be released twice.
+    await tx.inventoryMovement.updateMany({
+      where: { type: "RESERVATION", referenceId },
+      data: { referenceId: `${referenceId}#released` },
+    });
   });
 }
 
@@ -109,6 +114,11 @@ export async function commitStock(referenceId: string, userId?: string | null) {
         },
       });
     }
+    // Mark the reservation consumed (kept for audit) so it can never be committed twice.
+    await tx.inventoryMovement.updateMany({
+      where: { type: "RESERVATION", referenceId },
+      data: { referenceId: `${referenceId}#committed` },
+    });
   });
 }
 
